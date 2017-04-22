@@ -1,55 +1,36 @@
 var app = require('express')();
+
+var redis = require('redis').createClient();
+
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-var redis = require('redis').createClient();
+
 var port = process.env.PORT || 8080;
+
 server.listen(port);
 
-var messages=[];
-var onlineUser=[];
-var user=[];
-/*app.get('/', function(req, res){
-  res.render(__dirname + '/index.ejs');
-});*/
-
-//require('./config')(app, io);
 require('./routes')(app, io);
-console.log("Server has started on port " + port);
 
 
-var storeMessage = function(name, data) {
-    var message = JSON.stringify({
-        name: name,
-        data: data
-    });
-
-    redisClient.lpush("messages", message, function(err, response) {
-        redisClient.ltrim("messages", 0, 10);
-        console.log(response);
-    });
-};
 
 var chatRoom = io.on('connection',function(socket){
-	console.log('Client connected');
+	console.log('Client connected...');
 
 	socket.on('login',function(username){
-		console.log('login success');
+		console.log('Client name : '+username);
 		socket.username = username;
 		redis.sadd("users",username);
 
-		redis.smembers('users', function(err,users) {
+		redis.smembers("users", function(err,users) {
             console.log("users: " + users);
         });
-
-		redis.smembers('groups_'+username, function(err,groups) {
+		/*redis.smembers('groups'+username, function(err,groups) {
             console.log("groups: " + groups);
 
-     		console.log(groups.length);
-            
-            /*groups.forEach(function(group) {
+            groups.forEach(function(group) {
                 socket.emit('add group', group);
-            });*/
-        });
+            });
+        });*/
 	});
 
 	socket.on('join',function(socket){
@@ -90,3 +71,7 @@ var chatRoom = io.on('connection',function(socket){
 
 	});
 });
+
+
+
+console.log("Server has started on http://localhost:" + port);

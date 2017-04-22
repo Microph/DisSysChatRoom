@@ -9,10 +9,11 @@ module.exports = function(app,io){
 	});
 
 	app.get('/login',function(request,response){
-		response.redirect('/chat');
+		var username = request.query.username;
+		response.redirect('/'+username+'/chat');
 	});
 
-	app.get('/chat',function(request,response){
+	app.get('/:username/chat',function(request,response){
 		response.render(__dirname + '/chat.ejs');
 	});
 

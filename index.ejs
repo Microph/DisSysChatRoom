@@ -14,28 +14,18 @@
     <div class="row" id="pwd-container">
         <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
         <section class="login-form">
-            <form id = "login-form" method="get" action="/chat">
+            <form id = "login-form" method="get" action="/login">
             <h2 align="center">DIS SYS CHATROOM</h2>
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" class="form-control input-lg" id="username" placeholder="Username">
+                <input type="text" class="form-control input-lg" id="username" name="username" placeholder="Username">
             </div>
-            <button type="submit" name="sign in" class="btn btn-lg btn-primary btn-block">Sign in</button>
+            <button type="submit" class="btn btn-lg btn-primary btn-block">Sign in</button>
             </form>
         </section>
         </div>
     </div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-<script>
-    var socket = io.connect('http://localhost:8080');
-  $('#login-form').submit(function (e) {
-    var username = $('#username').val();
-
-    socket.emit('login', username);
-});
-
-</script>
 </body>
 </html>
 <!--
@@ -47,7 +37,6 @@
 
 
 
-<!--
 <html>
 
 <head>

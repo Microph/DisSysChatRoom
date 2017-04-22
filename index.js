@@ -25,6 +25,15 @@ var chatRoom = io.on('connection',function(socket){
 		redis.smembers("clients", function(err,clients) {
             console.log("clients: " + clients);
         });
+
+		var groupList_clientid = "group_" + clientid;
+
+        redis.smembers(groupList_clientid, function(err,groupList_clientid) {
+            console.log("groupList_clientid: " + groupList_clientid);
+            groupList_clientid.forEach(function(groupid) {
+                socket.emit('add group', groupid);
+        	});
+        });
 		/*redis.smembers('groups'+clientid, function(err,groups) {
             console.log("groups: " + groups);
 
@@ -34,12 +43,18 @@ var chatRoom = io.on('connection',function(socket){
         });*/
 	});
 
-	socket.on('createGroup',function(groupID){
+	socket.on('createGroup',function(groupid){
 
-		/*redis.sismember('groups',groupID,function(err,reply){
+		var clientid = socket.clientid;
+		//assume groupid not exist
+		redis.sadd("groupList",groupid);
+		redis.sadd("client_"+groupid,clientid);
+		redis.sadd("group_"+clientid,groupid);
+
+		/*redis.sismember('groups',groupid,function(err,reply){
 			if(reply == 0){	
-                redis.sadd('groups',groupID);
-                socket.emit('add group', groupID);
+                redis.sadd('groups',groupid);
+                socket.emit('add group', groupid);
 			}
 
 			else{

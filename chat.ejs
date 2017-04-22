@@ -11,7 +11,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> 
+
+    <!-- include jquery for preventDefault method Cancel the default action (navigation) of the click -->
+     <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>-->
 </head>
 
 <body>
@@ -19,11 +22,11 @@
     <div class="row" id="pwd-container">
         <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
         <section class="group-form">
-            <form id = "group-form" method="get">
+            <form id = "group-form">
             <h2 align="center">Enter Group Name</h2>
             <div class="form-group">
-                <label for="groupid">name</label>
-                <input type="text" class="form-control input-lg" id="groupid" placeholder="Group ID">
+                <label for="groupid_input">name</label>
+                <input type="text" class="form-control input-lg" id="groupid_input" placeholder="Group ID">
             </div>
             <button type="submit" class="btn btn-lg btn-primary btn-block">Create</button>
             </form>
@@ -31,9 +34,11 @@
         </div>
     </div>
     </div>
-    <ul id="groups">
-        <li>one</li>
-        <li>two</li>
+    <!--<form id="group_form">
+        <input type="text" id="groupid_input"></input>
+        <input type="submit"></input>
+    </form> -->
+    <ul id="group_list">
     </ul>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -46,10 +51,18 @@
             socket.emit('login', clientid);  
         });
 
-        $('#form-group').submit(function (e) {
-            var groupid = $('#login_input').val();
+        socket.on("add group", function (groupid) {
+            var groupLi = $('<li data-name="' + groupid + '">' + groupid + '</li>').data('groupid', groupid);
+            $('#group_list').append(groupLi);
+        });
 
-            socket.emit('login', clientid);
+        $('#group-form').submit(function (e) {
+            var groupid = $('#groupid_input').val();
+            $('#groupid_input').val('');
+            socket.emit('createGroup', groupid);
+            var groupLi = $('<li data-name="' + groupid + '">' + groupid + '</li>').data('groupid', groupid);
+            $('#group_list').append(groupLi);
+            e.preventDefault();
         });
     </script>
 

@@ -33,16 +33,23 @@ var chatRoom = io.on('connection',function(socket){
 	console.log('Client connected');
 
 	socket.on('login',function(username){
-		socket.set('username',username);
+		console.log('login success');
+		socket.username = username;
 		redis.sadd("users",username);
 
-		/*redis.smembers('groups'+username, function(err,groups) {
+		redis.smembers('users', function(err,users) {
+            console.log("users: " + users);
+        });
+
+		redis.smembers('groups_'+username, function(err,groups) {
             console.log("groups: " + groups);
 
-            groups.forEach(function(group) {
+     		console.log(groups.length);
+            
+            /*groups.forEach(function(group) {
                 socket.emit('add group', group);
-            });
-        });*/
+            });*/
+        });
 	});
 
 	socket.on('join',function(socket){

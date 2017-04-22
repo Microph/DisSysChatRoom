@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/Microph/DisSysChatRoom/issues"
   },
+  "files.associations": {
+    "*.ejs": "html"
+  },
   "homepage": "https://github.com/Microph/DisSysChatRoom#readme"
 }

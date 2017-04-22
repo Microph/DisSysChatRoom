@@ -12,9 +12,10 @@
     "bootstrap-sass": "~3.3.7",
     "ejs": "~2.5.6",
     "express": "^4.15.2",
-    "jquery": "~3.2.1",
     "font-awesome": "~4.7.0",
+    "jquery": "~3.2.1",
     "morgan": "~1.8.1",
+    "redis": "^2.7.1",
     "socket.io": "^1.7.3"
   },
   "repository": {

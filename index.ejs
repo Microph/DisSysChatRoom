@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Dis Sys Chatroom</title>
@@ -26,5 +26,38 @@
         </div>
     </div>
     </div>
+</body>
+</html>-->
+
+<!DOCTYPE html>
+
+<!--    
+    This file is rendered by express.js, when the home url of the chat is opened in a browser.
+    It doesn't do much, except showing the create button for the chat.
+ -->
+
+<html>
+
+<head>
+
+    <title>DisSysChatRoom</title>
+
+</head>
+
+<body>
+        <form id="login_form">
+    <input type="text" id="login_input"></input>
+    <input type="button" onclick="window.location.href= '/login'"></input>
+</form>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+  $('#login_form').submit(function (e) {
+    var username = $('#login_input').val();
+
+    socket.emit('login', username);
+
+</script>
+
 </body>
 </html>

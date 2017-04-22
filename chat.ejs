@@ -6,7 +6,7 @@
 <html>
 
 <head>
-    <title>Create Room</title>
+    <title>Create Group</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -18,12 +18,12 @@
     <div class="container">
     <div class="row" id="pwd-container">
         <div class="col-xs-12 col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4">
-        <section class="room-form">
-            <form id = "room-form" method="get" action="/chat">
-            <h2 align="center">Enter Room Name</h2>
+        <section class="group-form">
+            <form id = "group-form" method="get">
+            <h2 align="center">Enter Group Name</h2>
             <div class="form-group">
-                <label for="roomname">name</label>
-                <input type="text" class="form-control input-lg" id="roomname" placeholder="Roomname">
+                <label for="groupid">name</label>
+                <input type="text" class="form-control input-lg" id="groupid" placeholder="Group ID">
             </div>
             <button type="submit" class="btn btn-lg btn-primary btn-block">Create</button>
             </form>
@@ -31,16 +31,25 @@
         </div>
     </div>
     </div>
-
+    <ul id="groups">
+        <li>one</li>
+        <li>two</li>
+    </ul>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io.connect('http://localhost:8080');
 
-        //http://localhost:8080/usename/chat ---> window.location.pathname = /usename/chat
+        //http://localhost:8080/clientid/chat ---> window.location.pathname = /clientid/chat
         socket.on('connect', function (data) {
-            var username = window.location.pathname.split('/')[1];
-            socket.emit('login', username);  
+            var clientid = window.location.pathname.split('/')[1];
+            socket.emit('login', clientid);  
+        });
+
+        $('#form-group').submit(function (e) {
+            var groupid = $('#login_input').val();
+
+            socket.emit('login', clientid);
         });
     </script>
 

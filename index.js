@@ -16,35 +16,22 @@ require('./routes')(app, io);
 var chatRoom = io.on('connection',function(socket){
 	console.log('Client connected...');
 
-	socket.on('login',function(username){
-		console.log('Client name : '+username);
-		socket.username = username;
-		redis.sadd("users",username);
+	socket.on('login',function(clientid){
+		console.log('Client name : '+clientid);
+		socket.clientid = clientid;
+		redis.sadd("clients",clientid);
 
-		redis.smembers("users", function(err,users) {
-            console.log("users: " + users);
+		//for debug
+		redis.smembers("clients", function(err,clients) {
+            console.log("clients: " + clients);
         });
-		/*redis.smembers('groups'+username, function(err,groups) {
+		/*redis.smembers('groups'+clientid, function(err,groups) {
             console.log("groups: " + groups);
 
             groups.forEach(function(group) {
                 socket.emit('add group', group);
             });
         });*/
-	});
-
-	socket.on('join',function(socket){
-		/*socket.broadcast.emit('message',socket.username +  "has joined the chat room");
-
-		redisClient.smembers('chatters', function(err, names) {
-            console.log("names: " + names);
-
-            names.forEach(function(name) {
-                socket.emit('add user', name);
-            });
-        });*/
-
-		
 	});
 
 	socket.on('createGroup',function(groupID){
@@ -62,6 +49,21 @@ var chatRoom = io.on('connection',function(socket){
 		});*/
 		
 	});
+
+	socket.on('join',function(socket){
+		/*socket.broadcast.emit('message',socket.clientid +  "has joined the chat room");
+
+		redisClient.smembers('chatters', function(err, names) {
+            console.log("names: " + names);
+
+            names.forEach(function(name) {
+                socket.emit('add client', name);
+            });
+        });*/
+
+		
+	});
+
 
 	socket.on('disconnect',function(socket){
 		//remove from online set

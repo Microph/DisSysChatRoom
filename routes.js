@@ -9,14 +9,17 @@ module.exports = function(app,io){
 	});
 
 	app.get('/login',function(request,response){
-		var username = request.query.username;
-		response.redirect('/'+username+'/chat');
+		var clientid = request.query.clientid;
+		response.redirect('/'+clientid+'/chat');
 	});
 
-	app.get('/:username/chat',function(request,response){
+	app.get('/:clientid/chat',function(request,response){
 		response.render(__dirname + '/chat.ejs');
 	});
 
+	app.get('/:clientid/chat/:groupid',function(request,response){
+		response.render(__dirname + '/chat.ejs');
+	});
 };
 
 

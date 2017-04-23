@@ -30,6 +30,7 @@ var chatRoom = io.on('connection',function(socket){
 	socket.on('login',function(clientid){
 		console.log('Client name : '+clientid);
 		socket.clientid = clientid;
+		socket.groupid = 'GlobalChat';
 		redis.sadd("clients",clientid);
 
 		//for debug
@@ -67,8 +68,12 @@ var chatRoom = io.on('connection',function(socket){
 	socket.on('joinGroup',function(groupid){
 		//assume clientid in groupid
 		console.log("joinGroup: " + groupid);
-		socket.groupid = groupid;
+
+		socket.leave(socket.groupid);
+
 		socket.join(groupid);
+		socket.groupid = groupid;
+
 		var messages_group = "messages_" + groupid;
 
 		redis.lrange(messages_group, 0, -1, function(err, messages) {
@@ -103,7 +108,8 @@ var chatRoom = io.on('connection',function(socket){
         console.log(clientid + " sent " + message);
 	});
 
-	socket.on('disconnect',function(socket){
+	socket.on('disconnect',function(data){
+		socket.leave(socket.groupid);
 		//socket.leave(socket.groupid);
 	});
 

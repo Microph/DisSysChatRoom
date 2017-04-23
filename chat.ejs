@@ -145,7 +145,8 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
                                     <li>
-                                        <div align="center">Signed in as: clientid <br><br></div>
+
+                                        <div id="client-name" align="center">Signed in as: Undefined <br><br></div>
                                     </li>
                                     <li><a href="#">Leave Room</a></li>
                                     <li><a href="#">Sign Out</a></li>
@@ -199,6 +200,7 @@
     socket.on('connect', function (data) {
         var clientid = window.location.pathname.split('/')[1];
         socket.emit('login', clientid);  
+        $("#client-name").text("Signed in as: " + clientid);
     });
 
     socket.on("add group", function (groupid) {

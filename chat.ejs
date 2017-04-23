@@ -77,7 +77,7 @@
             <div class="col-sm-3 chat_sidebar">
                 <div class="row">
                     <div id="custom-search-input">
-                        <div id="groupid_input" class="input-group col-md-12">
+                        <div id="joinid_input" class="input-group col-md-12">
                             <input type="text" class="search-query form-control" placeholder="Join a Room" />
                             <button class="btn btn-danger" type="button">
                             <span class=" glyphicon glyphicon-search"></span>
@@ -97,7 +97,7 @@
                     <!-- /////////// group_list /////////// -->             
                     <div class="member_list">
                         <ul id="group_list" class="list-unstyled">
-                            <li class="left clearfix">
+                            <li id="chat-room1" class="left clearfix">
                                 <span class="chat-img pull-left">
                                 <img src= "/img/icon-user-default.png" alt="User Avatar" class="img-circle">
                                 </span>
@@ -112,7 +112,7 @@
                                 </div>
                             </li>
                             
-                            <li class="left clearfix">
+                            <li id="chat-room2" class="left clearfix">
                                 <span class="chat-img pull-left">
                                 <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
                                 </span>
@@ -133,7 +133,7 @@
             </div>
             <!--chat_sidebar-->
             <div class="col-sm-9 message_section">
-                <div class="row">
+                <div id="chat-window" class="row">
                     <div class="new_message_head">
                         <div id="room-name">
                             <u>Room 93</u>
@@ -239,6 +239,19 @@
         $('#groupid_input').val('');
         socket.emit('createGroup', groupid);
     });
+
+    $('#chat-room1').on('click',function (e) {
+        e.preventDefault();
+        var chatWindow = document.getElementById('chat-window');
+        chatWindow.style.display = 'block';
+    });
+
+    $('#chat-room2').on('click',function (e) {
+        e.preventDefault();
+        var chatWindow = document.getElementById('chat-window');
+        chatWindow.style.display = 'none';
+    });
+    
 </script>
 </body>
 </html>

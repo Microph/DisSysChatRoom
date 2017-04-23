@@ -11,7 +11,17 @@ server.listen(port);
 
 require('./routes')(app, io);
 
-
+var storeMessage = function(name, data, group_id) {
+    var message = JSON.stringify({
+        name: name,
+        data: data
+    });
+    var message_group = group_id
+    redis.lpush(message_group, message, function(err, response) {
+        redis.ltrim("messages", 0, 10);
+        console.log(response);
+    });
+};
 
 var chatRoom = io.on('connection',function(socket){
 	console.log('Client connected...');
@@ -66,9 +76,9 @@ var chatRoom = io.on('connection',function(socket){
 		
 	});
 
-	socket.on('join',function(socket){
+	socket.on('joinGroup',function(groupid){
 		/*socket.broadcast.emit('message',socket.clientid +  "has joined the chat room");
-
+		
 		redisClient.smembers('chatters', function(err, names) {
             console.log("names: " + names);
 
@@ -76,8 +86,27 @@ var chatRoom = io.on('connection',function(socket){
                 socket.emit('add client', name);
             });
         });*/
+        var clientid = socket.clientid;
+        socket.groupid = groupid;
+        socket.join(groupid);
+		console.log(clientid+' has joined group: '+groupid);
+		socket.broadcast.to(groupid).emit("message", clientid + " joined the chat");
 
-		
+		var message_group = 'message_'+groupid;
+
+		redis.lrange(message_group, 0, -1, function(err, groupMessage) {
+           	groupMessage = groupMessage.reverse();
+            console.log("messages from redis: " + groupMessage);
+            console.log("error from redis: " + err);
+
+            groupMessage.forEach(function(message) {
+                message = JSON.parse(message);
+                socket.emit("message", message.name + ": " + message.data);
+
+                console.log("message from redis: " + message.name + ": " + message.data);
+            });
+        });
+
 	});
 
 
@@ -85,8 +114,13 @@ var chatRoom = io.on('connection',function(socket){
 		//remove from online set
 	});
 
-	socket.on('message',function(data){
-
+	socket.on('message',function(msg){
+		console.log('Server notice '+socket.clientid+' send a msg.');
+		var clientid = socket.clientid;
+		socket.broadcast.to(socket.groupid).emit("message",clientid+':'+msg);
+		socket.emit("message",'me: ' + msg );
+		var  message_group = "message_"+socket.groupid;
+		storeMessage(clientid, msg,message_group);
 	});
 });
 

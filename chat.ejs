@@ -78,8 +78,8 @@
                 <div class="row">
                     <div id="custom-search-input">
                         <div id="groupid_input" class="input-group col-md-12">
-                            <input type="text" class="search-query form-control" placeholder="Join a Room" />
-                            <button class="btn btn-danger" type="button">
+                            <input type="text" class="search-query form-control" id = "joinid_input" placeholder="Join a Room" />
+                            <button class="btn btn-danger" type="button" id="joinButton">
                             <span class=" glyphicon glyphicon-search"></span>
                             </button>
                         </div>
@@ -140,7 +140,7 @@
                         </div>
                         <div id="dropdown-action" class="pull-right">
                             <div class="dropdown">
-                                <button class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <button class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" amria-expanded="false">
                                     <i class="fa fa-cogs" aria-hidden="true"></i>  Action <span class="caret"></span>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
@@ -155,7 +155,7 @@
                     </div>
                     <!--new_message_head-->
                     <div class="chat_area">
-                        <ul class="list-unstyled">
+                        <ul id = "chat-ul" class="list-unstyled">
                             <li class="left clearfix">
                                 <span class="chat-img1 pull-left">
                                 <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
@@ -169,7 +169,7 @@
                                 <span class="chat-img1 pull-left">
                                 <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
                                 </span>
-                                <div class="chat-body1 clearfix">
+                                <div class="chat-body1 clearfix" id = "chat-body">
                                     <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia.</p>
                                     <div class="chat_time pull-right">09:40PM</div>
                                 </div>
@@ -205,7 +205,7 @@
                     </div>
                     <!--chat_area-->
                     <div class="message_write">
-                        <textarea class="form-control" placeholder="type a message"></textarea>
+                        <textarea class="form-control" placeholder="type a message" id="chatTextArea"></textarea>
                         <div class="clearfix">
                         </div>
                         <div class="chat_bottom">
@@ -239,6 +239,34 @@
         $('#groupid_input').val('');
         socket.emit('createGroup', groupid);
     });
+
+    $('#joinButton').on('click',function (e) {
+        e.preventDefault();
+        var joinid = $('#joinid_input').val();
+        $('#joinid_input').val('');
+        socket.emit('joinGroup', joinid);
+    });
+
+    socket.on('message', function (msg) {
+        console.log(msg);
+        insertMessage(msg);
+    });
+
+     var insertMessage = function (msg) {
+      
+        var newChat = $('<li class="left clearfix"><span class="chat-img1 pull-left"><img src="/img/icon-user-default.png" alt="User Avatar"class="img-circle"></span><div class="chat-body1 clearfix" id = "chat-body"><p>'+msg+'</p><div class="chat_time pull-right">09:40PM</div></div></li>').data('msg',msg);
+        $('#chat-ul').append(newChat);
+    };
+
+    $('#send-btn').on('click',function (e) {
+        e.preventDefault();
+        var msg = $('#chatTextArea').val();
+        $('#chatTextArea').val('');
+        socket.emit('message', msg);
+        //insertMessage(msg2);
+        //e.preventDefault();
+    });
+   
 </script>
 </body>
 </html>

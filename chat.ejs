@@ -231,6 +231,7 @@
         var groupid = $('#join_input').val();
         $('#join_input').val('');
         socket.emit('joinGroup', groupid);
+        $("#message_list").html("");
     });
 
     $('#send-btn').on('click',function (e){

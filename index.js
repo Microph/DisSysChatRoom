@@ -68,7 +68,7 @@ var chatRoom = io.on('connection',function(socket){
 		//assume clientid in groupid
 		console.log("joinGroup: " + groupid);
 		socket.groupid = groupid;
-
+		socket.join(groupid);
 		var messages_group = "messages_" + groupid;
 
 		redis.lrange(messages_group, 0, -1, function(err, messages) {
@@ -93,15 +93,15 @@ var chatRoom = io.on('connection',function(socket){
         var messages_group = "messages_" + groupid;
 
         //socket.broadcast.to(socket.groupid).emit('receive', clientid + ' : ' + message);
-        socket.broadcast.emit('receive', clientid + ' : ' + message);
-        socket.emit('receive', clientid + ' : ' + message);
+        socket.broadcast.to(groupid).emit('receive', clientid + ' : ' + message);
+        socket.emit('self_receive', clientid + ' : ' + message);
         storeMessage(clientid, message, messages_group);
 
         console.log(clientid + " sent " + message);
 	});
 
 	socket.on('disconnect',function(socket){
-		//remove from online set
+		//socket.leave(socket.groupid);
 	});
 
 	

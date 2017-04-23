@@ -213,6 +213,11 @@
        $('#message_list').append(messageLi);
     });
 
+    socket.on('self_receive', function (message) {
+    	var messageLi = $('<li class="left clearfix admin_chat"><span class="chat-img1 pull-right"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body1 clearfix"><p>'+ message +'</p><div class="chat_time pull-left">09:40PM</div></div></li>').data('message', message);
+    	$('#message_list').append(messageLi);
+    });
+
 
     $('#createButton').on('click',function (e) {
         e.preventDefault();

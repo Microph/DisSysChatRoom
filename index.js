@@ -50,6 +50,7 @@ var chatRoom = io.on('connection',function(socket){
 		redis.sadd("groupList",groupid);
 		redis.sadd("client_"+groupid,clientid);
 		redis.sadd("group_"+clientid,groupid);
+		socket.emit('add group', groupid);
 
 		/*redis.sismember('groups',groupid,function(err,reply){
 			if(reply == 0){	

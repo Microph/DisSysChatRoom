@@ -133,7 +133,7 @@
             </div>
             <!--/////////// chat_sidebar /////////// -->
             <div class="col-sm-9 message_section">
-                <div class="row">
+                <div id="chat-window" class="row">
                     <div class="new_message_head">
                         <div id="room-name">
                             <u>Room 93</u>
@@ -224,14 +224,14 @@
         var groupid = $('#groupid_input').val();
         $('#groupid_input').val('');
         socket.emit('createGroup', groupid);
+        linkToGroup(groupid);
     });
 
     $('#joinButton').on('click',function (e) {
         e.preventDefault();
         var groupid = $('#join_input').val();
         $('#join_input').val('');
-        $("#message_list").html("");
-        socket.emit('joinGroup', groupid);
+        linkToGroup(groupid);
     });
 
     $('#send-btn').on('click',function (e){
@@ -252,12 +252,13 @@
 
 	function linkToGroup(groupid){
 		console.log("ma laew " + groupid);
-	    //var chatWindow = document.getElementById('chat-window');
+	    
+	    var chatWindow = document.getElementById('chat-window');
+	    chatWindow.style.display = 'block';
+
 	    $("#message_list").html("");
 	    socket.emit('joinGroup', groupid);
 
-	    //if(chatWindow.style.display === 'none')
-	    //	chatWindow.style.display = 'block';
 	}
 </script>
 </body>

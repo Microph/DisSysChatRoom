@@ -207,3 +207,6 @@
 #dropdown-action {
     display: inline-block;
   }
+  #chat-window{
+    display: none;
+  }

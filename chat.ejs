@@ -155,7 +155,7 @@
                     </div>
                     <!-- /////////// new_message_head /////////// -->
                     <div class="chat_area">
-                        <ul class="list-unstyled">
+                        <ul id="message_list" class="list-unstyled">
                             <li class="left clearfix">
                                 <span class="chat-img1 pull-left">
                                 <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
@@ -178,10 +178,10 @@
                     </div>
                     <!--chat_area-->
                     <div class="message_write">
-                        <textarea class="form-control" placeholder="type a message"></textarea>
+                        <textarea id="chat_input" class="form-control" placeholder="type a message"></textarea>
                         <div class="clearfix">
                         </div>
-                        <div class="chat_bottom">
+                        <div id="" class="chat_bottom">
                             <a href="#" class="pull-right btn btn-success" id="send-btn">Send</a>
                         </div>
                     </div>
@@ -206,16 +206,11 @@
         $('#group_list').append(groupLi);
     });
 
-    var insertMessage = function (message) {
-      var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body1 clearfix"><p>'+ message +'</p><div class="chat_time pull-right">09:40PM</div></div></li>').data('groupid', groupid);
 
-      $('#messages ul').append(
-        $('<li>').append(message)
-        );    
-    };
-    socket.on('messages', function (message) {
-        console.log(message);
-        insertMessage(message);
+    socket.on('receive', function (message) {
+        var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body1 clearfix"><p>'+ message +'</p><div class="chat_time pull-right">09:40PM</div></div></li>').data('message', message);
+
+       $('#message_list').append(messageLi);
     });
 
 
@@ -232,6 +227,15 @@
         $('#join_input').val('');
         socket.emit('joinGroup', groupid);
     });
+
+    $('#send-btn').on('click',function (e){
+    	e.preventDefault();
+		var message = $('#chat_input').val();
+		$('#chat_input').val('');
+		socket.emit('message', message);
+
+    	//insertMessage('me: ' + message + ' -->');
+  });
 </script>
 </body>
 </html>

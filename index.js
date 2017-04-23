@@ -62,22 +62,11 @@ var chatRoom = io.on('connection',function(socket){
 		redis.sadd("client_"+groupid,clientid);
 		redis.sadd("group_"+clientid,groupid);
 		socket.emit('add group', groupid);
-
-		/*redis.sismember('groups',groupid,function(err,reply){
-			if(reply == 0){	
-                redis.sadd('groups',groupid);
-                socket.emit('add group', groupid);
-			}
-
-			else{
-				socket.emit('error',"Duplicate group ID");
-			} //emit-> alert
-
-		});*/
 		
 	});
 	socket.on('joinGroup',function(groupid){
 		//assume clientid in groupid
+		console.log("joinGroup: " + groupid);
 		socket.groupid = groupid;
 
 		var messages_group = "messages_" + groupid;
@@ -89,35 +78,33 @@ var chatRoom = io.on('connection',function(socket){
 
             messages.forEach(function(message) {
                 message = JSON.parse(message);
-                socket.emit("messages", message.name + ": " + message.data);
-                console.log("message from redis: " + message.name + ": " + message.data);
+                socket.emit("receive", message.name + " : " + message.data);
+                console.log("message from redis: " + message.name + " : " + message.data);
             });
         });
 
-        console.log(name + " joined.");
+        console.log(socket.clientid + " joined.");
 
-
-		/*socket.broadcast.emit('message',socket.clientid +  "has joined the chat room");
-
-		redisClient.smembers('chatters', function(err, names) {
-            console.log("names: " + names);
-
-            names.forEach(function(name) {
-                socket.emit('add client', name);
-            });
-        });*/
-
-		
 	});
 
+	socket.on('message',function(message){
+        var clientid = socket.clientid;
+        var groupid = socket.groupid;
+        var messages_group = "messages_" + groupid;
+
+        //socket.broadcast.to(socket.groupid).emit('receive', clientid + ' : ' + message);
+        socket.broadcast.emit('receive', clientid + ' : ' + message);
+        socket.emit('receive', clientid + ' : ' + message);
+        storeMessage(clientid, message, messages_group);
+
+        console.log(clientid + " sent " + message);
+	});
 
 	socket.on('disconnect',function(socket){
 		//remove from online set
 	});
 
-	socket.on('message',function(data){
-
-	});
+	
 });
 
 

@@ -11,6 +11,17 @@ server.listen(port);
 
 require('./routes')(app, io);
 
+var storeMessage = function(name, data, messages_group) {
+    var message = JSON.stringify({
+        name: name,
+        data: data
+    });
+
+    redis.lpush(messages_group, message, function(err, response) {
+        redis.ltrim(messages_group, 0, 10);
+        console.log(response);
+    });
+};
 
 
 var chatRoom = io.on('connection',function(socket){
@@ -65,8 +76,27 @@ var chatRoom = io.on('connection',function(socket){
 		});*/
 		
 	});
+	socket.on('joinGroup',function(groupid){
+		//assume clientid in groupid
+		socket.groupid = groupid;
 
-	socket.on('join',function(socket){
+		var messages_group = "messages_" + groupid;
+
+		redis.lrange(messages_group, 0, -1, function(err, messages) {
+            messages = messages.reverse();
+            console.log("messages from redis: " + messages);
+            console.log("error from redis: " + err);
+
+            messages.forEach(function(message) {
+                message = JSON.parse(message);
+                socket.emit("messages", message.name + ": " + message.data);
+                console.log("message from redis: " + message.name + ": " + message.data);
+            });
+        });
+
+        console.log(name + " joined.");
+
+
 		/*socket.broadcast.emit('message',socket.clientid +  "has joined the chat room");
 
 		redisClient.smembers('chatters', function(err, names) {

@@ -77,10 +77,10 @@
             <div class="col-sm-3 chat_sidebar">
                 <div class="row">
                     <div id="custom-search-input">
-                        <div id="groupid_input" class="input-group col-md-12">
-                            <input type="text" class="search-query form-control" placeholder="Join a Room" />
-                            <button class="btn btn-danger" type="button">
-                            <span class=" glyphicon glyphicon-search"></span>
+                        <div class="input-group col-md-12">
+                            <input type="text" id="join_input" class="search-query form-control" placeholder="Join a Room" />
+                            <button id="joinButton" class="btn btn-danger" type="button">
+                            <span class="glyphicon glyphicon-search"></span>
                             </button>
                         </div>
                     </div>
@@ -131,7 +131,7 @@
                     <!-- /////////// end group_list /////////// -->   
                 </div>
             </div>
-            <!--chat_sidebar-->
+            <!--/////////// chat_sidebar /////////// -->
             <div class="col-sm-9 message_section">
                 <div class="row">
                     <div class="new_message_head">
@@ -153,7 +153,7 @@
                             </div>
                         </div>
                     </div>
-                    <!--new_message_head-->
+                    <!-- /////////// new_message_head /////////// -->
                     <div class="chat_area">
                         <ul class="list-unstyled">
                             <li class="left clearfix">
@@ -163,33 +163,6 @@
                                 <div class="chat-body1 clearfix">
                                     <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia.</p>
                                     <div class="chat_time pull-right">09:40PM</div>
-                                </div>
-                            </li>
-                            <li class="left clearfix">
-                                <span class="chat-img1 pull-left">
-                                <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
-                                </span>
-                                <div class="chat-body1 clearfix">
-                                    <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia.</p>
-                                    <div class="chat_time pull-right">09:40PM</div>
-                                </div>
-                            </li>
-                            <li class="left clearfix">
-                                <span class="chat-img1 pull-left">
-                                <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
-                                </span>
-                                <div class="chat-body1 clearfix">
-                                    <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia.</p>
-                                    <div class="chat_time pull-right">09:40PM</div>
-                                </div>
-                            </li>
-                            <li class="left clearfix admin_chat">
-                                <span class="chat-img1 pull-right">
-                                <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
-                                </span>
-                                <div class="chat-body1 clearfix">
-                                    <p>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia.</p>
-                                    <div class="chat_time pull-left">09:40PM</div>
                                 </div>
                             </li>
                             <li class="left clearfix admin_chat">
@@ -233,11 +206,31 @@
         $('#group_list').append(groupLi);
     });
 
+    var insertMessage = function (message) {
+      var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body1 clearfix"><p>'+ message +'</p><div class="chat_time pull-right">09:40PM</div></div></li>').data('groupid', groupid);
+
+      $('#messages ul').append(
+        $('<li>').append(message)
+        );    
+    };
+    socket.on('messages', function (message) {
+        console.log(message);
+        insertMessage(message);
+    });
+
+
     $('#createButton').on('click',function (e) {
         e.preventDefault();
         var groupid = $('#groupid_input').val();
         $('#groupid_input').val('');
         socket.emit('createGroup', groupid);
+    });
+
+    $('#joinButton').on('click',function (e) {
+        e.preventDefault();
+        var groupid = $('#join_input').val();
+        $('#join_input').val('');
+        socket.emit('joinGroup', groupid);
     });
 </script>
 </body>

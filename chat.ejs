@@ -202,7 +202,7 @@
     });
 
     socket.on("add group", function (groupid) {
-        var groupLi = $('<li class="left clearfix"><span class="chat-img pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
+        var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
         $('#group_list').append(groupLi);
     });
 
@@ -230,8 +230,8 @@
         e.preventDefault();
         var groupid = $('#join_input').val();
         $('#join_input').val('');
-        socket.emit('joinGroup', groupid);
         $("#message_list").html("");
+        socket.emit('joinGroup', groupid);
     });
 
     $('#send-btn').on('click',function (e){
@@ -241,7 +241,24 @@
 		socket.emit('message', message);
 
     	//insertMessage('me: ' + message + ' -->');
-  });
+
+    /*$('#chat-room').on('click',function (e) {
+        e.preventDefault();
+        var chatWindow = document.getElementById('chat-window');
+        chatWindow.style.display = 'block';
+    });*/
+
+  	});
+
+	function linkToGroup(groupid){
+		console.log("ma laew " + groupid);
+	    //var chatWindow = document.getElementById('chat-window');
+	    $("#message_list").html("");
+	    socket.emit('joinGroup', groupid);
+
+	    //if(chatWindow.style.display === 'none')
+	    //	chatWindow.style.display = 'block';
+	}
 </script>
 </body>
 </html>

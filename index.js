@@ -78,7 +78,10 @@ var chatRoom = io.on('connection',function(socket){
 
             messages.forEach(function(message) {
                 message = JSON.parse(message);
-                socket.emit("receive", message.name + " : " + message.data);
+                if(message.name == socket.clientid) 
+                	socket.emit("self_receive", message.name + " : " + message.data);
+                else 
+                	socket.emit("receive", message.name + " : " + message.data);
                 console.log("message from redis: " + message.name + " : " + message.data);
             });
         });

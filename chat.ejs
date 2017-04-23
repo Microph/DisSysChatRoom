@@ -135,8 +135,8 @@
             <div class="col-sm-9 message_section">
                 <div id="chat-window" class="row">
                     <div class="new_message_head">
-                        <div id="room-name">
-                            <u>Room 93</u>
+                        <div>
+                            <u id="room-name">Room undefined</u>
                         </div>
                         <div id="dropdown-action" class="pull-right">
                             <div class="dropdown">
@@ -257,6 +257,7 @@
 	    chatWindow.style.display = 'block';
 
 	    $("#message_list").html("");
+	    $("#room-name").text("Room: " + groupid);
 	    socket.emit('joinGroup', groupid);
 
 	}

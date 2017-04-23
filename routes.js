@@ -1,4 +1,4 @@
-//const express = require('express');
+express = require('express');
 
 //const router = express.Router();
 
@@ -20,6 +20,8 @@ module.exports = function(app,io){
 	app.get('/:clientid/chat/:groupid',function(request,response){
 		response.render(__dirname + '/chat.ejs');
 	});
+
+	app.use(express.static(__dirname + '/public'));
 };
 
 

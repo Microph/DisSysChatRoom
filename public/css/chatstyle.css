@@ -210,3 +210,7 @@
 #chat-window{
     display: none;
 }
+
+canvas { 
+  border-radius: 50%;
+}

@@ -194,6 +194,7 @@
 <script src="/socket.io/socket.io.js"></script>
 <script>
     var socket = io.connect('http://localhost:8080');
+    var _countElement = 0;
 
     //http://localhost:8080/clientid/chat -- window.location.pathname = /clientid/chat
     socket.on('connect', function (data) {
@@ -203,19 +204,24 @@
     });
 
     socket.on("add group", function (groupid) {
-        var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
+        var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><canvas id="avatar_'+ groupid +'" width="40" height="40"></canvas></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
         $('#group_list').append(groupLi);
+        genAvatar(groupid, groupid);
     });
 
 
     socket.on('receive', function (messagepack) {
-        var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body1 clearfix"><p>'+ messagepack.message +'</p><div class="chat_time pull-right">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
+        messagepack._countElement = _countElement++;
+        var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix"><p>'+ messagepack.message +'</p><div class="chat_time pull-right">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
        $('#message_list').append(messageLi);
+       genAvatar(messagepack.avatarName, messagepack._countElement);
     });
 
     socket.on('self_receive', function (messagepack) {
-    	var messageLi = $('<li class="left clearfix admin_chat"><span class="chat-img1 pull-right"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body1 clearfix"><p>'+ messagepack.message +'</p><div class="chat_time pull-left">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
-    	$('#message_list').append(messageLi);
+        messagepack._countElement = _countElement++;
+        var messageLi = $('<li class="left clearfix admin_chat"><span class="chat-img1 pull-right"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix"><p>'+ messagepack.message +'</p><div class="chat_time pull-left">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
+        $('#message_list').append(messageLi);
+        genAvatar(messagepack.avatarName, messagepack._countElement);
     });
 
 
@@ -252,6 +258,55 @@
 	    socket.emit('joinGroup', groupid);
 
 	}
+// -------------------------- Text Avatar Generator from Name  Begin ------------------------
+
+    String.prototype.hashCode = function() {
+        var hash = 0,
+            i, chr;
+        if (this.length === 0) return hash;
+        for (i = 0; i < this.length; i++) {
+            chr = this.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return (hash < 0) ? -hash : hash;
+    };
+
+    var colours = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#34495e", "#16a085", "#27ae60", "#2980b9", "#8e44ad", "#2c3e50", "#f1c40f", "#e67e22", "#e74c3c", "#95a5a6", "#f39c12", "#d35400", "#c0392b", "#bdc3c7", "#7f8c8d"];
+
+    function genAvatar(avatarName, countElement){
+        var name = avatarName;
+        initials = name.charAt(0).toUpperCase();
+
+        var charIndex = name.hashCode(),
+            colourIndex = charIndex % 19;
+
+        var canvas = document.getElementById("avatar_"+countElement);
+        var context = canvas.getContext("2d");
+
+        var canvasWidth = $(canvas).attr("width"),
+            canvasHeight = $(canvas).attr("height"),
+            canvasCssWidth = canvasWidth,
+            canvasCssHeight = canvasHeight;
+
+        if (window.devicePixelRatio) {
+            $(canvas).attr("width", canvasWidth * window.devicePixelRatio);
+            $(canvas).attr("height", canvasHeight * window.devicePixelRatio);
+            $(canvas).css("width", canvasCssWidth);
+            $(canvas).css("height", canvasCssHeight);
+            context.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        context.fillStyle = colours[colourIndex];
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.font = "18px Arial";
+        context.textAlign = "center";
+        context.fillStyle = "#FFF";
+        context.fillText(initials, canvasCssWidth / 2, canvasCssHeight / 1.5);
+    }
+
+// -------------------------- Text Avatar Generator from Name END----------------------
+
 </script>
 </body>
 </html>

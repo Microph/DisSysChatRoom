@@ -88,7 +88,8 @@ var chatRoom = io.on('connection',function(socket){
                 var messagepack = 
                 {
                      message: message.name + ' : ' + message.data,
-                     time: message.time
+                     time: message.time,
+                     avatarName : message.name
                 }
                 if(message.name == socket.clientid)
                     socket.emit("self_receive", messagepack);
@@ -112,7 +113,8 @@ var chatRoom = io.on('connection',function(socket){
         var messagepack = 
                 {
                      message: clientid + ' : ' + message,
-                     time
+                     time: time,
+                     avatarName : clientid
                 }
         //socket.broadcast.to(socket.groupid).emit('receive', clientid + ' : ' + message);
         socket.broadcast.to(groupid).emit('receive', messagepack);

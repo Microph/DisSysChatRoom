@@ -148,7 +148,7 @@
 
                                         <div id="client-name" align="center">Signed in as: Undefined <br><br></div>
                                     </li>
-                                    <li><a href="#">Leave Room</a></li>
+                                    <li><a onclick="leaveGroup()">Leave Group</a></li>
                                     <li><a href="/">Sign Out</a></li>
                                 </ul>
                             </div>
@@ -253,16 +253,21 @@
   	});
 
 	function linkToGroup(groupid){
-		console.log("ma laew " + groupid);
-	    
-	    var chatWindow = document.getElementById('chat-window');
+		var chatWindow = document.getElementById('chat-window');
 	    chatWindow.style.display = 'block';
 
 	    $("#message_list").html("");
 	    $("#room-name").text("Room: " + groupid);
 	    socket.emit('joinGroup', groupid);
-
 	}
+
+	function leaveGroup(groupid){
+		chatWindow.style.display = 'none';
+		
+
+		//todo: backend stuuf here
+	}
+	
 </script>
 </body>
 </html>

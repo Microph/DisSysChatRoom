@@ -201,12 +201,12 @@
   border: none;
   background-color: #3366cc;
 }
-#room-name {
+#group-name {
     display: inline-block;
   }
 #dropdown-action {
     display: inline-block;
   }
 #chat-window{
-  display: none;
+    display: none;
 }

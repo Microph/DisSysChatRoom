@@ -4,6 +4,7 @@ var redis = require('redis').createClient();
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+const moment = require('moment');
 
 var port = process.env.PORT || 8080;
 
@@ -11,6 +12,18 @@ server.listen(port);
 
 require('./routes')(app, io);
 
+var storeMessage = function(name, data, time, messages_group) {
+    var message = JSON.stringify({
+        name: name,
+        data: data,
+        time: time
+    });
+
+    redis.lpush(messages_group, message, function(err, response) {
+        redis.ltrim(messages_group, 0, 10);
+        console.log(response);
+    });
+};
 
 
 var chatRoom = io.on('connection',function(socket){
@@ -19,6 +32,7 @@ var chatRoom = io.on('connection',function(socket){
 	socket.on('login',function(clientid){
 		console.log('Client name : '+clientid);
 		socket.clientid = clientid;
+		socket.groupid = 'GlobalChat';
 		redis.sadd("clients",clientid);
 
 		//for debug
@@ -51,43 +65,68 @@ var chatRoom = io.on('connection',function(socket){
 		redis.sadd("client_"+groupid,clientid);
 		redis.sadd("group_"+clientid,groupid);
 		socket.emit('add group', groupid);
-
-		/*redis.sismember('groups',groupid,function(err,reply){
-			if(reply == 0){	
-                redis.sadd('groups',groupid);
-                socket.emit('add group', groupid);
-			}
-
-			else{
-				socket.emit('error',"Duplicate group ID");
-			} //emit-> alert
-
-		});*/
 		
 	});
+	socket.on('joinGroup',function(groupid){
+		//assume clientid in groupid
+		console.log("joinGroup: " + groupid);
 
-	socket.on('join',function(socket){
-		/*socket.broadcast.emit('message',socket.clientid +  "has joined the chat room");
+		socket.leave(socket.groupid);
 
-		redisClient.smembers('chatters', function(err, names) {
-            console.log("names: " + names);
+		socket.join(groupid);
+		socket.groupid = groupid;
 
-            names.forEach(function(name) {
-                socket.emit('add client', name);
+		var messages_group = "messages_" + groupid;
+
+		redis.lrange(messages_group, 0, -1, function(err, messages) {
+            messages = messages.reverse();
+            console.log("messages from redis: " + messages);
+            console.log("error from redis: " + err);
+
+            messages.forEach(function(message) {
+                message = JSON.parse(message);
+                var messagepack = 
+                {
+                     message: message.name + ' : ' + message.data,
+                     time: message.time
+                }
+                if(message.name == socket.clientid)
+                    socket.emit("self_receive", messagepack);
+                else
+                    socket.emit("receive", messagepack);
+
+                console.log("message from redis: " + message.name + " : " + message.data + " Time: " + message.time);
             });
-        });*/
+        });
 
-		
-	});
-
-
-	socket.on('disconnect',function(socket){
-		//remove from online set
-	});
-
-	socket.on('message',function(data){
+        console.log(socket.clientid + " joined.");
 
 	});
+
+	socket.on('message',function(message){
+        var clientid = socket.clientid;
+        var groupid = socket.groupid;
+        var messages_group = "messages_" + groupid;
+        var time = moment().format('HH:mm:ss');
+        
+        var messagepack = 
+                {
+                     message: clientid + ' : ' + message,
+                     time
+                }
+        //socket.broadcast.to(socket.groupid).emit('receive', clientid + ' : ' + message);
+        socket.broadcast.to(groupid).emit('receive', messagepack);
+        socket.emit('self_receive', messagepack);
+        storeMessage(clientid, message, time, messages_group);
+        console.log(clientid + " sent " + messagepack.messagePart + " Time: " + messagepack.time);
+	});
+
+	socket.on('disconnect',function(data){
+		socket.leave(socket.groupid);
+		//socket.leave(socket.groupid);
+	});
+
+	
 });
 
 

@@ -1,11 +1,12 @@
-express = require('express');
+const express = require('express');
+const moment = require('moment');
 
 //const router = express.Router();
 
 module.exports = function(app,io){
 
 	app.get('/',function(request,response){
-		response.render(__dirname + '/index.ejs');
+		response.render(__dirname + '/index.ejs', {currentTime: moment().format('LLLL')});
 	});
 
 	app.get('/login',function(request,response){

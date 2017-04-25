@@ -81,7 +81,14 @@ var chatRoom = io.on('connection',function(socket){
         redis.sismember("groupList", groupid, function(err, reply) {
             if (reply === 1) {
                 var clientid = socket.clientid;
+                var messagepack =
+                {
+                    message: clientid + ' has left the chat temporally! ',
+                    type: 'noti'
+                }
+                socket.broadcast.to(groupid).emit('noti-receive', messagepack);
                 socket.leave(socket.groupid);
+
 		        socket.join(groupid);
 		        socket.groupid = groupid;
 
@@ -148,8 +155,9 @@ var chatRoom = io.on('connection',function(socket){
                                 else
                                     socket.emit("receive_no_update_unread", messagepack);
                             }
+                            redis.set("last-read-"+groupid+clientid, mesCount);
                             //console.log("message from redis: " + message.name + " : " + message.data + " Time: " + message.time);
-                             });
+                            });
                         });
                     }
                 });
@@ -194,7 +202,6 @@ var chatRoom = io.on('connection',function(socket){
         var messagepack = 
                 {
                      message: clientid + ' has joined the chat! ',
-                     time,
                      type: 'noti'
                 }
         socket.broadcast.to(groupid).emit('noti-receive', messagepack);
@@ -210,16 +217,13 @@ var chatRoom = io.on('connection',function(socket){
         var time = moment().format('HH:mm:ss');
         var messagepack =
         {
-            message: clientid + ' has left the chat! ',
-                     time,
+            message: clientid + ' has left the chat permanently! ',
                      type: 'noti'
         }
+        socket.broadcast.to(groupid).emit('noti-receive', messagepack);
         //redis stuff
 		redis.srem("client_"+groupid,clientid);
 		redis.srem("group_"+clientid,groupid);
-        
-        socket.broadcast.to(groupid).emit('noti-receive', messagepack);
-        socket.emit('noti-receive', messagepack);
 		socket.leave(socket.groupid);
         socket.join('GlobalChat');
         socket.groupid = 'GlobalChat';

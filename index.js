@@ -131,7 +131,7 @@ var chatRoom = io.on('connection',function(socket){
 
 
 		        socket.join(groupid);
-
+                
 		        socket.groupid = groupid;
 
                 var messages_group = "messages_" + groupid;
@@ -172,7 +172,8 @@ var chatRoom = io.on('connection',function(socket){
         var messagepack = 
                 {
                      message: clientid + ' : ' + message,
-                     time
+                     time: time,
+                     avatarName : clientid
                 }
         //socket.broadcast.to(socket.groupid).emit('receive', clientid + ' : ' + message);
         socket.broadcast.to(groupid).emit('receive', messagepack);

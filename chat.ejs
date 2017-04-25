@@ -97,35 +97,7 @@
                     <!-- /////////// group_list /////////// -->             
                     <div class="member_list">
                         <ul id="group_list" class="list-unstyled">
-                            <li class="left clearfix">
-                                <span class="chat-img pull-left">
-                                <img src= "/img/icon-user-default.png" alt="User Avatar" class="img-circle">
-                                </span>
-                                <div class="chat-body clearfix">
-                                    <div class="header_sec">
-                                        <strong class="primary-font">John Cena</strong> <strong class="pull-right">
-                                        09:45AM</strong>
-                                    </div>
-                                    <div class="contact_sec">
-                                        <strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span>
-                                    </div>
-                                </div>
-                            </li>
-                            
-                            <li class="left clearfix">
-                                <span class="chat-img pull-left">
-                                <img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle">
-                                </span>
-                                <div class="chat-body clearfix">
-                                    <div class="header_sec">
-                                        <strong class="primary-font">John Cena</strong> <strong class="pull-right">
-                                        09:45AM</strong>
-                                    </div>
-                                    <div class="contact_sec">
-                                        <strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span>
-                                    </div>
-                                </div>
-                            </li>
+                            <!-- Group Lists go here -->
                         </ul>
                     </div>
                     <!-- /////////// end group_list /////////// -->   
@@ -147,7 +119,8 @@
                                     <li>
                                         <div id="client-name" align="center">Signed in as: Undefined</div>
                                     </li>
-                                    <li><a href="#"><br>Leave Group</a></li>
+                                    <li><br></li>
+                                    <li><a href="#">Leave Group</a></li>
                                     <li><a href="/">Sign Out</a></li>
                                 </ul>
                             </div>
@@ -191,6 +164,15 @@
         </div>
     </div>
 </div>
+
+<div id='modal' class="modal fade" tabindex="-1" role="dialog" aria-labelledby="ModalLabel">
+  <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-content">
+      <div id='modal-message' align="center">...</div>
+    </div>
+  </div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
     var socket = io.connect('http://localhost:8080');
@@ -203,8 +185,10 @@
     });
 
     socket.on("add group", function (groupid) {
-        var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
-        $('#group_list').append(groupLi);
+        if(!document.getElementById("li_" + groupid)){
+            var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><img src="/img/icon-user-default.png" alt="User Avatar" class="img-circle"></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
+            $('#group_list').append(groupLi);
+        }
     });
 
 
@@ -218,20 +202,37 @@
     	$('#message_list').append(messageLi);
     });
 
+    socket.on('modal-toggle', function (message) {
+        $('#modal-message').text(message);
+    	$('#modal').modal('toggle');
+    });
+
+    socket.on('create-success', function (groupid) {
+        socket.emit('joinGroup', groupid);
+    });
+
+    //invoke only if join success
+    socket.on('join-success', function (groupid) {  
+        var chatWindow = document.getElementById('chat-window');
+	    chatWindow.style.display = 'block';
+
+	    $("#message_list").html("");
+	    $("#group-name b").text("Group: " + groupid);
+    });
+
 
     $('#createButton').on('click',function (e) {
         e.preventDefault();
         var groupid = $('#groupid_input').val();
         $('#groupid_input').val('');
         socket.emit('createGroup', groupid);
-        linkToGroup(groupid);
     });
 
     $('#joinButton').on('click',function (e) {
         e.preventDefault();
         var groupid = $('#join_input').val();
         $('#join_input').val('');
-        linkToGroup(groupid);
+        socket.emit('joinGroup', groupid);
     });
 
     $('#send-btn').on('click',function (e){
@@ -240,18 +241,10 @@
 		$('#chat_input').val('');
 		socket.emit('message', message);
   	});
-
-	function linkToGroup(groupid){
-		console.log("ma laew " + groupid);
-	    
-	    var chatWindow = document.getElementById('chat-window');
-	    chatWindow.style.display = 'block';
-
-	    $("#message_list").html("");
-	    $("#group-name b").text("Group: " + groupid);
-	    socket.emit('joinGroup', groupid);
-
-	}
+    
+    function linkToGroup(groupid){
+        socket.emit('joinGroup', groupid);
+    }
 </script>
 </body>
 </html>

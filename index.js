@@ -27,6 +27,7 @@ var storeMessage = function(name, data, time, messages_group) {
 
 
 var chatRoom = io.on('connection',function(socket){
+    //redis.flushall();
 	console.log('Client connected...');
 
 	socket.on('login',function(clientid){
@@ -60,48 +61,107 @@ var chatRoom = io.on('connection',function(socket){
 	socket.on('createGroup',function(groupid){
 
 		var clientid = socket.clientid;
-		//assume groupid not exist
-		redis.sadd("groupList",groupid);
-		redis.sadd("client_"+groupid,clientid);
-		redis.sadd("group_"+clientid,groupid);
-		socket.emit('add group', groupid);
-		
-	});
-	socket.on('joinGroup',function(groupid){
-		//assume clientid in groupid
-		console.log("joinGroup: " + groupid);
-
-		socket.leave(socket.groupid);
-
-		socket.join(groupid);
-		socket.groupid = groupid;
-
-		var messages_group = "messages_" + groupid;
-
-		redis.lrange(messages_group, 0, -1, function(err, messages) {
-            messages = messages.reverse();
-            console.log("messages from redis: " + messages);
-            console.log("error from redis: " + err);
-
-            messages.forEach(function(message) {
-                message = JSON.parse(message);
-                var messagepack = 
-                {
-                     message: message.name + ' : ' + message.data,
-                     time: message.time
-                }
-                if(message.name == socket.clientid)
-                    socket.emit("self_receive", messagepack);
-                else
-                    socket.emit("receive", messagepack);
-
-                console.log("message from redis: " + message.name + " : " + message.data + " Time: " + message.time);
-            });
+        redis.sismember("groupList", groupid, function(err, reply) {
+            if (reply === 1) {
+                socket.emit('modal-toggle', "The group ID \""+ groupid +"\" already exists!");
+            } else {
+                socket.emit('add group', groupid);
+		        redis.sadd("groupList",groupid);
+		        redis.sadd("client_"+groupid,clientid);
+		        redis.sadd("group_"+clientid,groupid);
+                socket.emit('create-success', groupid);
+            }
         });
 
-        console.log(socket.clientid + " joined.");
-
 	});
+	socket.on('joinGroup',function(groupid){
+        redis.sismember("groupList", groupid, function(err, reply) {
+            if (reply === 1) {
+                var clientid = socket.clientid;
+                socket.emit('join-success', groupid);
+                socket.emit('add group', groupid);
+
+                socket.leave(socket.groupid);
+                /* redis remove stuff here */
+
+
+		        socket.join(groupid);
+                /* redis add stuff here */
+
+		        socket.groupid = groupid;
+
+                var messages_group = "messages_" + groupid;
+
+                redis.lrange(messages_group, 0, -1, function(err, messages) {
+                    messages = messages.reverse();
+                    console.log("messages from redis: " + messages);
+                    console.log("error from redis: " + err);
+
+                    messages.forEach(function(message) {
+                        message = JSON.parse(message);
+                        var messagepack = 
+                        {
+                            message: message.name + ' : ' + message.data,
+                            time: message.time
+                        }
+                        if(message.name == socket.clientid)
+                            socket.emit("self_receive", messagepack);
+                        else
+                            socket.emit("receive", messagepack);
+
+                        console.log("message from redis: " + message.name + " : " + message.data + " Time: " + message.time);
+                    });
+                });
+                socket.emit('modal-toggle', "You are now joined in group ID \""+ groupid +"\"!");
+                console.log(socket.clientid + " joined.");
+            } else {
+                socket.emit('modal-toggle', "The group ID \""+ groupid +"\" does not exist!");
+            }
+        });
+	});
+
+    /*socket.on('joinGroupNoModal',function(groupid){
+        redis.sismember("groupList", groupid, function(err, reply) {
+            if (reply === 1) {
+                var clientid = socket.clientid;
+                socket.emit('join-success', groupid);
+                socket.emit('add group', groupid);
+
+                socket.leave(socket.groupid);
+
+
+		        socket.join(groupid);
+
+		        socket.groupid = groupid;
+
+                var messages_group = "messages_" + groupid;
+
+                redis.lrange(messages_group, 0, -1, function(err, messages) {
+                    messages = messages.reverse();
+                    console.log("messages from redis: " + messages);
+                    console.log("error from redis: " + err);
+
+                    messages.forEach(function(message) {
+                        message = JSON.parse(message);
+                        var messagepack = 
+                        {
+                            message: message.name + ' : ' + message.data,
+                            time: message.time
+                        }
+                        if(message.name == socket.clientid)
+                            socket.emit("self_receive", messagepack);
+                        else
+                            socket.emit("receive", messagepack);
+
+                        console.log("message from redis: " + message.name + " : " + message.data + " Time: " + message.time);
+                    });
+                });
+                console.log(socket.clientid + " joined.");
+            } else {
+                socket.emit('modal-toggle', "The group ID \""+ groupid +"\" does not exist!");
+            }
+        });
+	});*/
 
 	socket.on('message',function(message){
         var clientid = socket.clientid;

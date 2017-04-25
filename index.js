@@ -88,7 +88,14 @@ var chatRoom = io.on('connection',function(socket){
                 var messages_group = "messages_" + groupid;
                 var mesCount = 0;
                 redis.get("last-read-"+groupid+clientid, function(err, value) {
-                    lastRead = parseInt(value) + 1;
+                    if(isNaN(value))
+                    {
+                        var lastRead = 0;
+                        redis.set("last-read-"+groupid+clientid, lastRead);
+                    }
+                    else
+                        var lastRead = parseInt(value) + 1;
+                    
                     if (err) {
                         console.error("error last read");
                     } else {
@@ -146,8 +153,6 @@ var chatRoom = io.on('connection',function(socket){
                         });
                     }
                 });
-
-                
 
                 //redis stuff here
                 redis.sadd("groupList",groupid);

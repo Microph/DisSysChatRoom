@@ -156,7 +156,7 @@
   width: 40px;
 }
 .chat_area .chat-body1 {
-  margin-left: 50px;
+  margin-left: 20px;
 }
 .chat-body1 p {
   background: #fbf9fa none repeat scroll 0 0;
@@ -164,7 +164,7 @@
 }
 .chat_area .admin_chat .chat-body1 {
   margin-left: 0;
-  margin-right: 50px;
+  margin-right: 20px;
 }
 .chat_area li:last-child {
   padding-bottom: 10px;
@@ -196,6 +196,11 @@
   background: #428bca none repeat scroll 0 0;
   color: #fff;
   cursor:pointer;
+}
+
+.chat_time{
+  font-size: 8px;
+  color: #777777;
 }
 #send-btn {
   border: none;

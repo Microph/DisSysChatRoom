@@ -107,8 +107,9 @@
             <div class="col-sm-9 message_section">
                 <div id="chat-window" class="row">
                     <div class="new_message_head">
+                        <b>Group: </b>
                         <div id="group-name">
-                            <b>Group undefined</b>
+                            <b>undefined</b>
                         </div>
                         <div id="dropdown-action" class="pull-right">
                             <div class="dropdown">
@@ -120,7 +121,7 @@
                                         <div id="client-name" align="center">Signed in as: Undefined</div>
                                     </li>
                                     <li><br></li>
-                                    <li><a href="#">Leave Group</a></li>
+                                    <li><a id="leave-btn" href="#">Leave Group</a></li>
                                     <li><a href="/">Sign Out</a></li>
                                 </ul>
                             </div>
@@ -177,6 +178,7 @@
 <script>
     var socket = io.connect('http://localhost:8080');
     var _countElement = 0;
+    var countRead = 0;
 
     //http://localhost:8080/clientid/chat -- window.location.pathname = /clientid/chat
     socket.on('connect', function (data) {
@@ -185,27 +187,52 @@
         $("#client-name").text("Signed in as: " + clientid);
     });
 
-    socket.on("add group", function (groupid) {
+    socket.on("add-group-list", function (groupid) {
         if(!document.getElementById("li_" + groupid)){
-            var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><canvas id="avatar_'+ groupid +'" width="40" height="40"></canvas></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
+            //var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><canvas id="avatar_'+ groupid +'" width="40" height="40"></canvas></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong><strong class="pull-right">09:45AM</strong></div><div class="contact_sec"><strong class="primary-font">(123) 123-456</strong> <span class="badge pull-right">3</span></div></div></li>').data('groupid', groupid);
+            var groupLi = $('<li class="left clearfix" id="li_'+groupid+'" onClick="linkToGroup(\''+groupid+'\')"><span class="chat-img pull-left"><canvas id="avatar_'+ groupid +'" width="40" height="40"></canvas></span><div class="chat-body clearfix"><div class="header_sec"><strong class="primary-font">'+groupid+'</strong></div><div class="contact_sec"> </div></div></li>').data('groupid', groupid);
             $('#group_list').append(groupLi);
             genAvatar(groupid, groupid);
         }
     });
 
-
     socket.on('receive', function (messagepack) {
         messagepack._countElement = _countElement++;
-        var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix"><p>'+ messagepack.message +'</p><div class="chat_time pull-right">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
+        countRead++;
+        var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix pull-left"><p>'+ messagepack.message +'</p><div class="chat_time pull-left">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
        $('#message_list').append(messageLi);
        genAvatar(messagepack.avatarName, messagepack._countElement);
+       socket.emit('update-unread', countRead);
     });
 
     socket.on('self_receive', function (messagepack) {
         messagepack._countElement = _countElement++;
-        var messageLi = $('<li class="left clearfix admin_chat"><span class="chat-img1 pull-right"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix"><p>'+ messagepack.message +'</p><div class="chat_time pull-left">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
+        countRead++;
+        var messageLi = $('<li class="left clearfix admin_chat"><span class="chat-img1 pull-right"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix pull-right"><p>'+ messagepack.message +'</p><div class="chat_time pull-right">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
         $('#message_list').append(messageLi);
         genAvatar(messagepack.avatarName, messagepack._countElement);
+        socket.emit('update-unread', countRead);
+    });
+
+    socket.on('receive_no_update_unread', function (messagepack) {
+        messagepack._countElement = _countElement++;
+        countRead++;
+        var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix pull-left"><p>'+ messagepack.message +'</p><div class="chat_time pull-left">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
+       $('#message_list').append(messageLi);
+       genAvatar(messagepack.avatarName, messagepack._countElement);
+    });
+
+    socket.on('self_receive_no_update_unread', function (messagepack) {
+        messagepack._countElement = _countElement++;
+        countRead++;
+        var messageLi = $('<li class="left clearfix admin_chat"><span class="chat-img1 pull-right"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix pull-right"><p>'+ messagepack.message +'</p><div class="chat_time pull-right">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
+        $('#message_list').append(messageLi);
+        genAvatar(messagepack.avatarName, messagepack._countElement);
+    });
+    
+    socket.on('noti-receive', function (messagepack) {
+        var messageLi = $('<li class="left clearfix admin_chat"><div class="chat-body1 clearfix"><p align="center">'+ messagepack.message +'</p></div></li>').data('messagepack', messagepack);
+        $('#message_list').append(messageLi);
     });
 
     socket.on('modal-toggle', function (message) {
@@ -213,19 +240,15 @@
     	$('#modal').modal('toggle');
     });
 
-    socket.on('create-success', function (groupid) {
-        socket.emit('joinGroup', groupid);
-    });
-
-    //invoke only if join success
     socket.on('join-success', function (groupid) {  
         var chatWindow = document.getElementById('chat-window');
 	    chatWindow.style.display = 'block';
 
 	    $("#message_list").html("");
-	    $("#group-name b").text("Group: " + groupid);
-    });
+	    $("#group-name b").text(groupid);
 
+        socket.emit('join-noti');
+    });
 
     $('#createButton').on('click',function (e) {
         e.preventDefault();
@@ -238,7 +261,7 @@
         e.preventDefault();
         var groupid = $('#join_input').val();
         $('#join_input').val('');
-        socket.emit('joinGroup', groupid);
+        linkToGroup(groupid);
     });
 
     $('#send-btn').on('click',function (e){
@@ -247,23 +270,22 @@
 		$('#chat_input').val('');
 		socket.emit('message', message);
   	});
+
+    $('#leave-btn').on('click',function (e){
+    	e.preventDefault();
+        var groupid = $("#group-name b").text();
+        var groupList = document.getElementById('li_' + groupid);
+        groupList.remove();
+        var chatWindow = document.getElementById('chat-window');
+	    chatWindow.style.display = 'none';
+        socket.emit('leave-group');
+  	});
     
     function linkToGroup(groupid){
-        socket.emit('joinGroup', groupid);
         _countElement = 0;
+        countRead = 0;
+        socket.emit('joinGroup', groupid);
     }
-
-	/*function linkToGroup(groupid){
-		console.log("ma laew " + groupid);
-	    
-	    var chatWindow = document.getElementById('chat-window');
-	    chatWindow.style.display = 'block';
-
-	    $("#message_list").html("");
-	    $("#group-name b").text("Group: " + groupid);
-	    socket.emit('joinGroup', groupid);
-        
-	}*/
 
 // -------------------------- Text Avatar Generator from Name  Begin ------------------------
 

@@ -24,10 +24,3 @@ module.exports = function(app,io){
 
 	app.use(express.static(__dirname + '/public'));
 };
-
-
-
-
-
-
-

@@ -6,7 +6,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 const moment = require('moment');
 
-var port = process.env.PORT || 8080;
+var port = process.argv[2] || 8080;
 
 server.listen(port);
 

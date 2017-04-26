@@ -86,7 +86,7 @@ var chatRoom = io.on('connection',function(socket){
                     message: clientid + ' has left the chat temporally! ',
                     type: 'noti'
                 }
-                socket.broadcast.to(groupid).emit('noti-receive', messagepack);
+                socket.broadcast.to(socket.groupid).emit('noti-receive', messagepack);
                 socket.leave(socket.groupid);
 
 		        socket.join(groupid);
@@ -94,6 +94,7 @@ var chatRoom = io.on('connection',function(socket){
 
                 var messages_group = "messages_" + groupid;
                 var mesCount = 0;
+                
                 redis.get("last-read-"+groupid+clientid, function(err, value) {
                     if(isNaN(value))
                     {
@@ -213,11 +214,10 @@ var chatRoom = io.on('connection',function(socket){
     socket.on('leave-group',function(){
         var clientid = socket.clientid;
         var groupid = socket.groupid;
-        var messages_group = "messages_" + groupid;
         var time = moment().format('HH:mm:ss');
         var messagepack =
         {
-            message: clientid + ' has left the chat permanently! ',
+            message: clientid + ' has left the chat permanently!',
                      type: 'noti'
         }
         socket.broadcast.to(groupid).emit('noti-receive', messagepack);
@@ -235,6 +235,12 @@ var chatRoom = io.on('connection',function(socket){
 	});
 
 	socket.on('disconnect',function(data){
+        var messagepack =
+            {
+                message: socket.clientid + ' has been disconnected! ',
+                type: 'noti'
+            }
+        socket.broadcast.to(socket.groupid).emit('noti-receive', messagepack);
 		socket.leave(socket.groupid);
 	});
 

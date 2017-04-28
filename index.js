@@ -78,6 +78,7 @@ var chatRoom = io.on('connection',function(socket){
 	});
 
 	socket.on('joinGroup',function(groupid){
+        if(groupid==socket.groupid) return;
         redis.sismember("groupList", groupid, function(err, reply) {
             if (reply === 1) {
                 var clientid = socket.clientid;
@@ -95,11 +96,39 @@ var chatRoom = io.on('connection',function(socket){
                 var messages_group = "messages_" + groupid;
                 var mesCount = 0;
                 
-                redis.get("last-read-"+groupid+clientid, function(err, value) {
+                //---------------set first time----------------
+                var firstRead = 0;
+                var key_firstRead = "first-read-"+groupid+"_"+clientid;
+                var message_length = 0;
+
+                redis.llen(messages_group,function(err, value) {
+                    message_length = value+1;
+                });
+
+                console.log("message_length :  "+message_length);
+                if(redis.exists(key_firstRead)) {
+                    redis.get(key_firstRead, function(err, value) {
+                        if(value == -1 || value==null) {
+                            redis.set(key_firstRead, message_length);
+                            console.log("set1 : "+key_firstRead + "  ======  "+message_length);
+                            firstRead = message_length;
+                        }
+                        else firstRead = value;
+                    });
+                }
+                else {
+                    redis.set(key_firstRead, message_length);
+                    firstRead = message_length;
+                    console.log("set2 : "+key_firstRead + "  ======  "+message_length);
+                }
+                //-------------------END-----------------------
+
+
+                redis.get("last-read-"+groupid+"_"+clientid, function(err, value) {
                     if(isNaN(value))
                     {
                         var lastRead = 0;
-                        redis.set("last-read-"+groupid+clientid, lastRead);
+                        redis.set("last-read-"+groupid+"_"+clientid, lastRead);
                     }
                     else
                         var lastRead = parseInt(value) + 1;
@@ -132,31 +161,33 @@ var chatRoom = io.on('connection',function(socket){
                                 //unread message noti
                                 mesCount++;
                                 console.log("mesCount "+ mesCount + " lastRead" + lastRead);
-                                    
-                                if(mesCount == lastRead)
-                                {
-                                    console.log("detect unRead of "+ clientid + lastRead);
+                                
+                                    if(mesCount == lastRead)
+                                    {
+                                        console.log("detect unRead of "+ clientid + lastRead);
+                                        var messagepack = 
+                                        {
+                                            message: "unread messages below."
+                                        }
+                                        socket.emit("noti-receive", messagepack);
+                                    }
+
                                     var messagepack = 
                                     {
-                                        message: "unread messages below."
+                                        message: message.name + ': ' + message.data,
+                                        time: message.time,
+                                        avatarName : message.name,
+                                        type: message.type
                                     }
-                                    socket.emit("noti-receive", messagepack);
+                                if (mesCount >= firstRead) { 
+                                    if(message.name == socket.clientid)
+                                        socket.emit("self_receive_no_update_unread", messagepack);
+                                    else
+                                        socket.emit("receive_no_update_unread", messagepack);
                                 }
-
-                                var messagepack = 
-                                {
-                                    message: message.name + ': ' + message.data,
-                                    time: message.time,
-                                    avatarName : message.name,
-                                    type: message.type
-                                }
-
-                                if(message.name == socket.clientid)
-                                    socket.emit("self_receive_no_update_unread", messagepack);
-                                else
-                                    socket.emit("receive_no_update_unread", messagepack);
+                                else socket.emit("count_Read");
                             }
-                            redis.set("last-read-"+groupid+clientid, mesCount);
+                            redis.set("last-read-"+groupid+"_"+clientid, mesCount);
                             //console.log("message from redis: " + message.name + " : " + message.data + " Time: " + message.time);
                             });
                         });
@@ -169,7 +200,9 @@ var chatRoom = io.on('connection',function(socket){
 		        redis.sadd("group_"+clientid,groupid);
                 socket.emit('add-group-list', groupid);
                 socket.emit('join-success', groupid);
-            } else {
+
+            } 
+            else {
                 socket.emit('modal-toggle', "The group ID \""+ groupid +"\" does not exist!");
             }
         });
@@ -227,10 +260,13 @@ var chatRoom = io.on('connection',function(socket){
 		socket.leave(socket.groupid);
         socket.join('GlobalChat');
         socket.groupid = 'GlobalChat';
+
+        var key_firstRead = "first-read-"+groupid+"_"+clientid;
+        redis.set(key_firstRead, -1);
 	});
 
     socket.on('update-unread', function(value){
-		redis.set("last-read-"+socket.groupid+socket.clientid, value);
+		redis.set("last-read-"+socket.groupid+"_"+socket.clientid, value);
         console.log("last read of" + socket.clientid + " " + value);
 	});
 

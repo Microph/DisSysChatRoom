@@ -128,7 +128,7 @@
                         </div>
                     </div>
                     <!-- /////////// new_message_head /////////// -->
-                    <div class="chat_area">
+                    <div id="chat_area" class="chat_area">
                         <ul id="message_list" class="list-unstyled">
                             <li class="left clearfix">
                                 <span class="chat-img1 pull-left">
@@ -203,6 +203,7 @@
        $('#message_list').append(messageLi);
        genAvatar(messagepack.avatarName, messagepack._countElement);
        socket.emit('update-unread', countRead);
+       scrollToBottom();
     });
 
     socket.on('self_receive', function (messagepack) {
@@ -212,6 +213,7 @@
         $('#message_list').append(messageLi);
         genAvatar(messagepack.avatarName, messagepack._countElement);
         socket.emit('update-unread', countRead);
+        scrollToBottom();
     });
 
     socket.on('receive_no_update_unread', function (messagepack) {
@@ -220,6 +222,7 @@
         var messageLi = $('<li class="left clearfix"><span class="chat-img1 pull-left"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix pull-left"><p>'+ messagepack.message +'</p><div class="chat_time pull-left">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
        $('#message_list').append(messageLi);
        genAvatar(messagepack.avatarName, messagepack._countElement);
+       scrollToBottom();
     });
 
     socket.on('self_receive_no_update_unread', function (messagepack) {
@@ -228,11 +231,15 @@
         var messageLi = $('<li class="left clearfix admin_chat"><span class="chat-img1 pull-right"><canvas id="avatar_'+ messagepack._countElement +'" width="40" height="40"></canvas></span><div class="chat-body1 clearfix pull-right"><p>'+ messagepack.message +'</p><div class="chat_time pull-right">'+ messagepack.time +'</div></div></li>').data('messagepack', messagepack);
         $('#message_list').append(messageLi);
         genAvatar(messagepack.avatarName, messagepack._countElement);
+        scrollToBottom();
     });
+
+    socket.on('count_Read', function () {countRead++;});
     
     socket.on('noti-receive', function (messagepack) {
         var messageLi = $('<li class="left clearfix admin_chat"><div class="chat-body1 clearfix"><p align="center">'+ messagepack.message +'</p></div></li>').data('messagepack', messagepack);
         $('#message_list').append(messageLi);
+        scrollToBottom();
     });
 
     socket.on('modal-toggle', function (message) {
@@ -281,12 +288,21 @@
         socket.emit('leave-group');
   	});
     
+    $("#chat_input").keyup(function(event){
+    if(event.keyCode == 13){
+        $("#send-btn").click();
+    }
+    });
+
     function linkToGroup(groupid){
         _countElement = 0;
         countRead = 0;
         socket.emit('joinGroup', groupid);
     }
-
+    function scrollToBottom(){
+        var elem = document.getElementById('chat_area');
+        elem.scrollTop = elem.scrollHeight;
+    }
 // -------------------------- Text Avatar Generator from Name  Begin ------------------------
 
     String.prototype.hashCode = function() {

@@ -3,7 +3,7 @@ const commandLineArgs = require('command-line-args');
  
 const optionDefinitions = [
   { name: 'redis', alias: 'r', type: String,defaultValue:"localhost:6379" },
-  { name: 'port', alias:'p', type: Number, defaultOption: 8080 },
+  { name: 'port', alias:'p', type: Number},
 ];
 
 const options = commandLineArgs(optionDefinitions);
@@ -16,8 +16,8 @@ var io = require('socket.io')(server);
 const moment = require('moment');
 var adapter = require('socket.io-redis');
 io.adapter(adapter({host:redisAddress[0],port:redisAddress[1]}));
-
-server.listen(options.port);
+var port= options.port || 8080;
+server.listen(port);
 
 require('./routes')(app, io);
 

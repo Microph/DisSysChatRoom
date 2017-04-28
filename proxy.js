@@ -22,10 +22,8 @@ var proxies = servers.map(function (target) {
 
 
 var selectServer = function() {
-  var index;
-   if (index < 0 || !proxies[0].options.down) {
-    index = 0;
-  } else {
+  var index=0;
+   if (proxies[0].options.down) {
     index = 1;
   }
   return index;

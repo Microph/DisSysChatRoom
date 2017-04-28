@@ -1,14 +1,23 @@
 var app = require('express')();
+const commandLineArgs = require('command-line-args');
+ 
+const optionDefinitions = [
+  { name: 'redis', alias: 'r', type: String,defaultValue:"localhost:6379" },
+  { name: 'port', alias:'p', type: Number, defaultOption: 8080 },
+];
 
-var redis = require('redis').createClient();
+const options = commandLineArgs(optionDefinitions);
+
+var redisAddress = options.redis.split(':');
+var redis = require('redis').createClient({host:redisAddress[0],port:redisAddress[1]});
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 const moment = require('moment');
+var adapter = require('socket.io-redis');
+io.adapter(adapter({host:redisAddress[0],port:redisAddress[1]}));
 
-var port = process.argv[2] || 8080;
-
-server.listen(port);
+server.listen(options.port);
 
 require('./routes')(app, io);
 

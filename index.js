@@ -5,7 +5,6 @@ const optionDefinitions = [
 ]
 const options = commandLineArgs(optionDefinitions);
 
-var proxyAddress = options.redis.split(':');
 var redisAddress = options.redis.split(':');
 
 var app = require('express')();
